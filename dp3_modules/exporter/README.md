@@ -1,0 +1,1 @@
+This module is used to export labeled data from DP3 system to .h5 file. The .h5 file can be then used for training of machine learning models.
