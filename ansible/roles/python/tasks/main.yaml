@@ -1,0 +1,8 @@
+- name: Install dp3 from git
+  pip:
+    name: "git+https://github.com/CESNET/dp3.git@new_dp3#egg=dp3[deploy]"
+    state: present
+
+- name: Install Optuna for model hyperparametrization
+  pip:
+    name: optuna

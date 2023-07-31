@@ -1,0 +1,104 @@
+- name: Add group named alf
+  group:
+    name: alf
+    state: present
+
+- name: Add user named alf
+  user:
+    name: alf
+    group: alf
+    state: present
+    shell: /bin/bash
+    createhome: yes
+
+- name: Start and enable redis service
+  service:
+    name: redis
+    state: started
+    enabled: yes
+
+- name: Copy rabbitmq-env.conf file
+  copy:
+    src: rabbitmq-env.conf
+    dest: /etc/rabbitmq/rabbitmq-env.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Start and enable rabbitmq-server service
+  service:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
+
+- name: Enable web management interface
+  command: rabbitmq-plugins enable rabbitmq_management
+
+- name: Download rabbitmqadmin
+  get_url:
+    url: "http://localhost:15672/cli/rabbitmqadmin"
+    dest: "/tmp/rabbitmqadmin"
+    mode: '0755'
+
+- name: Move rabbitmqadmin to /usr/bin
+  command: mv /tmp/rabbitmqadmin /usr/bin/
+  args:
+    creates: /usr/bin/rabbitmqadmin
+
+- name: Download rmq_reconfigure.sh script
+  get_url:
+    url: "https://raw.githubusercontent.com/CESNET/dp3/new_dp3/scripts/rmq_reconfigure.sh"
+    dest: "/tmp/rmq_reconfigure.sh"
+    mode: '0700'
+
+- name: Run rmq_reconfigure.sh script
+  command: sh /tmp/rmq_reconfigure.sh alf 2
+
+- name: Run dp3 configuration for nginx
+  become: yes
+  command: "/usr/local/bin/dp3 config nginx --hostname {{ server_hostname }} --app-name {{ app_name }} --www-root {{ www_root }}"
+  vars:
+    server_hostname: grappa.liberouter.org
+    app_name: alf
+    www_root: /var/www/dp3
+
+- name: Start and enable nginx service
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Ensure firewalld is not masked
+  command: systemctl unmask firewalld
+
+- name: Ensure firewalld is enabled
+  systemd:
+    name: firewalld
+    enabled: yes
+
+- name: Ensure firewalld is running
+  systemd:
+    name: firewalld
+    state: started
+
+- name: Open port 80/tcp
+  firewalld:
+    port: 80/tcp
+    permanent: true
+    state: enabled
+
+- name: Reload firewalld
+  command: firewall-cmd --reload
+
+- name: Create DP3 application
+  become: yes
+  command: "/usr/local/bin/dp3 setup /alf alf"
+
+- name: Setup supervisor control of all DP3 processes
+  become: yes
+  command: "/usr/local/bin/dp3 config supervisor --config /alf/config --app-name alf"
+
+
+
+
+

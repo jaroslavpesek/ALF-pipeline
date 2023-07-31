@@ -1,0 +1,12 @@
+- name: Enable Fedora Copr for NEMEA
+  command: dnf copr -y enable @CESNET/NEMEA-stable
+
+- name: Install NEMEA and friends
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nemea
+    - libtrap
+    - unirec
+    - nemea-framework
