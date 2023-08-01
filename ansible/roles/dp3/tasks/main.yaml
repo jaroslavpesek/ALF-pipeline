@@ -1,3 +1,16 @@
+- name: Remove application and configuration to create clean environment
+  become: yes
+  shell: |
+    rm -rf /alf && rm -rf /etc/alf && rm -rf /var/run/alf
+    SERVICE_NAME="alf"
+    if systemctl --all --type=service | grep -q "$SERVICE_NAME"; then
+        systemctl stop "$SERVICE_NAME"
+        systemctl disable "$SERVICE_NAME"
+        rm "/etc/systemd/system/${SERVICE_NAME}.service"
+        systemctl daemon-reload
+        systemctl reset-failed
+    fi
+
 - name: Add group named alf
   group:
     name: alf
@@ -56,7 +69,8 @@
 
 - name: Run dp3 configuration for nginx
   become: yes
-  command: "/usr/local/bin/dp3 config nginx --hostname {{ server_hostname }} --app-name {{ app_name }} --www-root {{ www_root }}"
+  shell: |
+    source /dp3-venv/bin/activate && $(which dp3) config nginx --hostname {{ server_hostname }} --app-name {{ app_name }} --www-root {{ www_root }}
   vars:
     server_hostname: grappa.liberouter.org
     app_name: alf
@@ -91,12 +105,77 @@
   command: firewall-cmd --reload
 
 - name: Create DP3 application
+  shell: |
+    source /dp3-venv/bin/activate && $(which dp3) setup /alf alf
+
+- name: Change ownership of DP3 app folder to alf user
   become: yes
-  command: "/usr/local/bin/dp3 setup /alf alf"
+  file:
+    path: /alf
+    owner: alf
+    group: alf
+    recurse: yes
+
+- name: Create /var/run/alf folder of user and group alf
+  file:
+    path: /var/run/alf
+    state: directory
+    owner: alf
+    group: alf
+    mode: 0755
+
+- name: Copy MongoDB setup file
+  copy:
+    src: database.yml
+    dest: /alf/config/database.yml
+    owner: alf
+    group: alf
+    mode: 0644
+
+- name: Copy history manager config file
+  copy:
+    src: history_manager.yml
+    dest: /alf/config/history_manager.yml
+    owner: alf
+    group: alf
+    mode: 0644
+
+- name: Remove example db_entities folder
+  become: yes
+  file:
+    path: /alf/config/db_entities
+    state: absent
+
+- name: Copy db_entities folder
+  copy:
+    src: db_entities
+    dest: /alf/config/db_entities
+    owner: alf
+    group: alf
+    mode: 0644
+
+- name: Create folder for datapoints history
+  file:
+    path: /data/datapoints
+    state: directory
+    owner: alf
+    group: alf
+    mode: 0755
 
 - name: Setup supervisor control of all DP3 processes
+  shell: |
+    source /dp3-venv/bin/activate && sudo $(which dp3) config supervisor --config /alf/config --app-name alf
+
+- name: Reload units
   become: yes
-  command: "/usr/local/bin/dp3 config supervisor --config /alf/config --app-name alf"
+  shell: |
+    systemctl daemon-reload
+
+- name: Start and enable alf application
+  systemd:
+    name: alf
+    state: started
+    enabled: yes
 
 
 

@@ -2,7 +2,8 @@
 - hosts: all
   become: yes
   roles:
-    - base
-    - nemea
+  #  - base
+  #  - nemea
     - python
     - dp3
+

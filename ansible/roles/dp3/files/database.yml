@@ -1,0 +1,16 @@
+# MongoDB Connection configuration
+db_name: "alf"
+username: "alf"
+password: "alf"
+
+connection:
+  mode: "replica"
+  replica_set: "alf"
+  hosts:
+    - address: "mongo1.liberouter.org" 
+      port: 27004
+    - address: "mongo2.liberouter.org" 
+      port: 27004
+    - address: "mongo3.liberouter.org" 
+      port: 27004
+

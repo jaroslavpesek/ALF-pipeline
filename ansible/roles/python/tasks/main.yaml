@@ -1,8 +1,17 @@
+- name: Create Python virtual enviroment for DP3
+  command: python3 -m venv /dp3-venv
+
+- name: Create Python virtual enviroment for ML Deployer
+  command: python3 -m venv /ml-venv
+
 - name: Install dp3 from git
   pip:
     name: "git+https://github.com/CESNET/dp3.git@new_dp3#egg=dp3[deploy]"
     state: present
+    virtualenv: /dp3-venv
 
 - name: Install Optuna for model hyperparametrization
   pip:
     name: optuna
+    state: present
+    virtualenv: /ml-venv
