@@ -55,6 +55,7 @@ PARAM('b', "budget", " every strategy is limited by budget. This parameter speci
 PARAM('q', "query-strategy", "Number of the query strategy to be used. ", required_argument, "int32") \
 PARAM('t', "threshold", "θ - labeling threshold for Fixed uncertainty strategy", required_argument, "double")\
 PARAM('s', "step", "adjusting step", required_argument, "double")\
+PARAM('v', "variance", "variance of the threshold randomization used in Uncertainty Strategy with Randomization", required_argument, "double")\
 PARAM('n', "no-eof", "Do not send terminate message vie output IFC.", no_argument, "none")
 
 
@@ -67,6 +68,7 @@ static char sendeof = 1;
 static double budget =0.5;
 static double labeling_threshold =0.5;
 static double step =0.1;
+static double t_variance=1;
 
 TRAP_DEFAULT_SIGNAL_HANDLER(stop = 1)
 
@@ -84,7 +86,7 @@ char fixed_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fi
 }
 
 char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID){
-   static double I_labeling_threshold =1.0;
+   static double threshold =1.0;
    static double u =1.0;
    static long t = 0;
    t++;
@@ -95,12 +97,12 @@ char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int
 
    if(u/t < budget){
       double probability = (*(double *)  ((char *)(data) + (in_tmplt)->offset[fieldID]));
-      if(probability < I_labeling_threshold){
+      if(probability < threshold){
          u++;
-         I_labeling_threshold *= 1-step;
+         threshold *= 1-step;
          return 1;
       }else{
-         I_labeling_threshold *= step+1;
+         threshold *= step+1;
          return 0;
       }
    }else{
@@ -271,6 +273,9 @@ int main(int argc, char **argv)
          break;
       case 's'://step
          step = strtod(optarg, NULL);
+         break;
+      case 'v'://step
+         t_variance = strtod(optarg, NULL);
          break;
       }
    }
