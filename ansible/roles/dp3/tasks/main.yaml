@@ -1,8 +1,8 @@
 - name: Remove application and configuration to create clean environment
   become: yes
   shell: |
-    rm -rf /alf && rm -rf /etc/alf && rm -rf /var/run/alf
-    SERVICE_NAME="alf"
+    rm -rf /{{ app_name }} && rm -rf /etc/{{ app_name }} && rm -rf /var/run/{{ app_name }}
+    SERVICE_NAME="{{ app_name }}"
     if systemctl --all --type=service | grep -q "$SERVICE_NAME"; then
         systemctl stop "$SERVICE_NAME"
         systemctl disable "$SERVICE_NAME"
@@ -11,15 +11,15 @@
         systemctl reset-failed
     fi
 
-- name: Add group named alf
+- name: Add group 
   group:
-    name: alf
+    name: "{{ app_name }}"
     state: present
 
-- name: Add user named alf
+- name: Add user
   user:
-    name: alf
-    group: alf
+    name: "{{ app_name }}"
+    group: "{{ app_name }}"
     state: present
     shell: /bin/bash
     createhome: yes
@@ -32,7 +32,7 @@
 
 - name: Copy rabbitmq-env.conf file
   copy:
-    src: rabbitmq-env.conf
+    src: "{{ root_path }}/config/dp3/rabbitmq-env.conf"
     dest: /etc/rabbitmq/rabbitmq-env.conf
     owner: root
     group: root
@@ -65,15 +65,13 @@
     mode: '0700'
 
 - name: Run rmq_reconfigure.sh script
-  command: sh /tmp/rmq_reconfigure.sh alf 2
+  command: sh /tmp/rmq_reconfigure.sh {{ app_name }} 2
 
 - name: Run dp3 configuration for nginx
   become: yes
   shell: |
-    source /dp3-venv/bin/activate && $(which dp3) config nginx --hostname {{ server_hostname }} --app-name {{ app_name }} --www-root {{ www_root }}
+    source /dp3-venv/bin/activate && $(which dp3) config nginx --hostname {{ server_name }} --app-name {{ app_name }} --www-root {{ www_root }}
   vars:
-    server_hostname: grappa.liberouter.org
-    app_name: alf
     www_root: /var/www/dp3
 
 - name: Start and enable nginx service
@@ -106,76 +104,99 @@
 
 - name: Create DP3 application
   shell: |
-    source /dp3-venv/bin/activate && $(which dp3) setup /alf alf
+    source /dp3-venv/bin/activate && $(which dp3) setup /{{ app_name }} {{ app_name }}
 
-- name: Change ownership of DP3 app folder to alf user
+- name: Change ownership of DP3 app folder to application user
   become: yes
   file:
-    path: /alf
-    owner: alf
-    group: alf
+    path: /{{ app_name }}
+    owner: "{{ app_name }}"
+    group: "{{ app_name }}"
     recurse: yes
 
-- name: Create /var/run/alf folder of user and group alf
+- name: Create folder in /var/run for application
   file:
-    path: /var/run/alf
+    path: /var/run/{{ app_name }}
     state: directory
-    owner: alf
-    group: alf
+    owner: "{{ app_name }}"
+    group: "{{ app_name }}"
     mode: 0755
 
 - name: Copy MongoDB setup file
   copy:
-    src: database.yml
-    dest: /alf/config/database.yml
-    owner: alf
-    group: alf
+    src: "{{ root_path }}/config/dp3/database.yml"
+    dest: /{{ app_name }}/config/database.yml
+    owner: "{{ app_name }}"
+    group: "{{ app_name }}"
     mode: 0644
 
 - name: Copy history manager config file
   copy:
-    src: history_manager.yml
-    dest: /alf/config/history_manager.yml
-    owner: alf
-    group: alf
+    src: "{{ root_path }}/config/dp3/history_manager.yml"
+    dest: /{{ app_name }}/config/history_manager.yml
+    owner: "{{ app_name }}"
+    group: "{{ app_name }}"
+    mode: 0644
+
+- name: Copy processing config
+  copy:
+    src: "{{ root_path }}/config/dp3/processing_core.yml"
+    dest: /{{ app_name }}/config/processing_core.yml
+    owner: "{{ app_name }}"
+    group: "{{ app_name }}"
     mode: 0644
 
 - name: Remove example db_entities folder
   become: yes
   file:
-    path: /alf/config/db_entities
+    path: /{{ app_name }}/config/db_entities
+    state: absent
+
+- name: Remove example module
+  become: yes
+  file:
+    path: /{{ app_name }}/modules/test_module.py
     state: absent
 
 - name: Copy db_entities folder
   copy:
-    src: db_entities
-    dest: /alf/config/db_entities
-    owner: alf
-    group: alf
+    src: "{{ root_path }}/config/dp3/db_entities"
+    dest: /{{ app_name }}/config
+    owner: "{{ app_name }}"
+    group: "{{ app_name }}"
+    mode: 0644
+
+- name: Copy dp3_modules folder
+  copy:
+    src: "{{ root_path }}/dp3_modules"
+    dest: /{{ app_name }}
+    owner: "{{ app_name }}"
+    group: "{{ app_name }}"
     mode: 0644
 
 - name: Create folder for datapoints history
   file:
     path: /data/datapoints
     state: directory
-    owner: alf
-    group: alf
+    owner: "{{ app_name }}"
+    group: "{{ app_name }}"
     mode: 0755
 
 - name: Setup supervisor control of all DP3 processes
   shell: |
-    source /dp3-venv/bin/activate && sudo $(which dp3) config supervisor --config /alf/config --app-name alf
+    source /dp3-venv/bin/activate && sudo $(which dp3) config supervisor --config /{{ app_name }}/config --app-name {{ app_name }}
 
 - name: Reload units
   become: yes
   shell: |
     systemctl daemon-reload
 
-- name: Start and enable alf application
+- name: Start and enable application
   systemd:
-    name: alf
+    name: "{{ app_name }}"
     state: started
     enabled: yes
+
 
 
 

@@ -1,8 +1,9 @@
 entity:
   id: flow_unlabeled
-  name: Entity for unlabeled flow
+  name: unlabeled flow
   key_data_type: int64
   auto_create_record: true
+  snapshot: true
 attribs:
   features:
     name: features
@@ -13,12 +14,13 @@ attribs:
     name: ip_src
     description: Source IP address
     type: plain
-    data_type: ip
+    data_type: string
   ip_dst:
     name: ip_dst
     description: Destination IP address
     type: plain
-    data_type: ip
+    data_type: string
+
   
   
   
