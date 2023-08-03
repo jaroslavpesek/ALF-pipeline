@@ -46,9 +46,9 @@
 #define _TRAFFIC_REPEATER_H_
 
 // Information if sigaction is available for nemea signal macro registration
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+//#ifdef HAVE_CONFIG_H //TODO OPRAVIT takhle je to spatne
+#include "config.h"
+//#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,6 +60,7 @@
 #include <getopt.h>
 #include <inttypes.h>
 #include <libtrap/trap.h>
+#include <unirec/unirec.h>
 
 /*!
  * \name Default values
@@ -71,11 +72,17 @@
 #define NS 1000000000 /*< Number of nanoseconds in a second. */
 /*! \} */
 
+
+double get_random() { return (double)rand() / (double)RAND_MAX; }
+
+
+char  random_strategy(const void *data,ur_template_t * in_tmplt);
+
 /*!
  * \brief Traffic repeater function
  * Function to resend received data from input interface to output interface.
  */
-void traffic_repeater(void);
+void salf(void);
 
 /*!
  * \brief Main function.

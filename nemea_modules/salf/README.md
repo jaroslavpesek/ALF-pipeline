@@ -1,5 +1,7 @@
 This module performs streaming active learning. It is based on the paper "Active Learning with Evolving Streaming Data" of Zliobaite at al.
 
+Compile: gcc salf.c -lunirec -ltrap -lnemea-common -g -o salf
+
 The active learning logic is performed in the function `sqs (flow, config)` (sqs = streaming query strategy), where flow is IP flow accepted by input interface and config is configuration of the module. The function returns `True` if the flow should be potentionaly labeled and `False` otherwise.
 
 The pseudocode for this module:

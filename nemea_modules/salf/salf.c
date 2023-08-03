@@ -43,31 +43,72 @@
  *
  */
 
-#include "traffic_repeater.h"
+#include "salf.h"
 
 trap_module_info_t *module_info = NULL;
 
 #define MODULE_BASIC_INFO(BASIC) \
   BASIC("traffic_repeater","This module receive data from input interface and resend it to the output interface based on given arguments in -i option.",1,1)
 
-#define MODULE_PARAMS(PARAM) PARAM('n', "no-eof", "Do not send terminate message vie output IFC.", no_argument, "none")
+#define MODULE_PARAMS(PARAM) \
+PARAM('b', "budget", " every strategy is limited by budget. This parameter specifies the budget. This number should be in interval [0,1] and it is interpreted as percentage of the data.", required_argument, "int32") \
+PARAM('s', "query-strategy", "Number of the query strategy to be used. ", required_argument, "int32") \
+PARAM('n', "no-eof", "Do not send terminate message vie output IFC.", no_argument, "none")
 
 static char stop = 0; /*!< Global variable used by signal handler to end the traffic repeater. */
 static int verb = 0; /*< Global variable used to print verbose messages. */
 static char sendeof = 1;
 
+static double budget =0.5;
+
 TRAP_DEFAULT_SIGNAL_HANDLER(stop = 1)
 
-void traffic_repeater(void)
+
+char random_strategy(const void *data,ur_template_t * in_tmplt){
+   return (get_random() < budget);
+}
+
+char fixed_uncertainty_strategy(const void *data,ur_template_t * in_tmplt){
+   static int mem =0;
+
+
+}
+
+char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt){
+
+
+}
+
+
+void salf(void)
 {
    int ret;
    uint16_t data_size;
-   uint64_t cnt_r, cnt_s, cnt_t, diff;
+   uint64_t cnt_r = 0; //Flows received
+   uint64_t cnt_s = 0; //Flows sent
+   uint64_t cnt_t = 0; //timeouts
+   uint64_t diff;
    const void *data;
    struct timespec start, end;
+   ur_template_t * in_tmplt= NULL;
+
+   char (* strategy_fnc)(const void *, ur_template_t * ) = &random_strategy;
+
+
+   switch (diff){
+   case 1:
+      strategy_fnc =&random_strategy;
+      break;
+   
+   case 2:
+      strategy_fnc =&random_strategy;
+      break;
+   
+   default:
+      break;
+   }
 
    data_size = 0;
-   cnt_r = cnt_s = cnt_t = 0;
    data = NULL;
    if (verb) {
       fprintf(stderr, "Info: Initializing traffic repeater...\n");
@@ -75,7 +116,12 @@ void traffic_repeater(void)
    clock_gettime(CLOCK_MONOTONIC, &start);
 
    //set NULL to required format on input interface
+
+ //"ipaddr SRC_IP,ipaddr DST_IP,uint16 SRC_PORT,uint16 DST_PORT,uint8 PROTOCOL,uint64 BYTES,uint64 BYTES_REV,uint32 PACKETS,uint32 PACKETS_REV,time TIME_FIRST,time TIME_LAST,string TLS_SNI,uint8 PREDICTION,string EXPLANATION,string LABEL";
+   
    trap_set_required_fmt(0, TRAP_FMT_UNIREC, "");
+
+   
 
    TRAP_REGISTER_DEFAULT_SIGNAL_HANDLER();
 
@@ -84,7 +130,7 @@ void traffic_repeater(void)
       ret = trap_recv(0, &data, &data_size);
       if (ret == TRAP_E_OK || ret == TRAP_E_FORMAT_CHANGED) {
          cnt_r++;
-         if (ret == TRAP_E_OK) {
+         if (ret == TRAP_E_OK && in_tmplt != NULL) {
             if (data_size <= 1) {
                if (verb) {
                   fprintf(stderr, "Info: Final record received, terminating repeater...\n");
@@ -99,14 +145,41 @@ void traffic_repeater(void)
                fprintf(stderr, "Data format was not loaded.");
                return;
             }
+
+            if(in_tmplt !=NULL){
+               ur_free_template(in_tmplt);
+            }
+            int test=ur_define_set_of_fields(spec);
+            in_tmplt = ur_create_template_from_ifc_spec(spec);
+
+            
+
             // Set the same data format to repeaters output interface
             trap_set_data_fmt(0, TRAP_FMT_UNIREC, spec);
+            
          }
-
+         
+         
          if (stop == 1 && sendeof == 0){
             /* terminating module without eof message */
             break;
          } else {
+
+            if(in_tmplt == NULL){
+               //TODO co delat
+               //continue;
+            }
+
+            int ggg =ur_get_id_by_name("PREDICTION");
+
+            uint8_t lol= ur_get(in_tmplt,data,ggg);
+
+            uint8_t kkk = (*(uint8_t *)  ((char *)(data) + (in_tmplt)->offset[ggg]));
+
+            if(!(*strategy_fnc)(data,in_tmplt)){
+               continue;
+            }
+
             ret = trap_send(0, data, data_size);
             if (ret == TRAP_E_OK) {
                cnt_s++;
@@ -125,7 +198,15 @@ void traffic_repeater(void)
    fprintf(stderr, "Info: Flows sent:      %16" PRIu64 "\n", cnt_s > 0 ? cnt_s - 1 : cnt_s);
    fprintf(stderr, "Info: Timeouts:        %16" PRIu64 "\n", cnt_t);
    fprintf(stderr, "Info: Time elapsed:    %12" PRIu64 ".%03" PRIu64 "s\n", diff / NS, (diff % NS) / 1000000);
+
+   if(in_tmplt != NULL){
+      ur_free_template(in_tmplt);
+   }
+
 }
+
+
+
 
 int main(int argc, char **argv)
 {
@@ -134,15 +215,27 @@ int main(int argc, char **argv)
    verb = (trap_get_verbose_level() >= 0);
    signed char opt;
 
+   srand(time(NULL)); // randomize seed
+
+   int query_strategy =0;
+
    while ((opt = TRAP_GETOPT(argc, argv, module_getopt_string, long_options)) != -1) {
       switch (opt) {
       case 'n':
          sendeof = 0;
          break;
+      case 'b':
+         char *ptr;
+         budget = strtod(optarg, &ptr);
+         
+         break;
+      case 's':
+         query_strategy = atoi(optarg);
+         break;
       }
    }
 
-   traffic_repeater();
+   salf();
    TRAP_DEFAULT_FINALIZATION();
    FREE_MODULE_INFO_STRUCT(MODULE_BASIC_INFO, MODULE_PARAMS)
 
