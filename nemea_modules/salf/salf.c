@@ -48,39 +48,72 @@
 trap_module_info_t *module_info = NULL;
 
 #define MODULE_BASIC_INFO(BASIC) \
-  BASIC("traffic_repeater","This module receive data from input interface and resend it to the output interface based on given arguments in -i option.",1,1)
+  BASIC("salf","This module receive data from input interface and resend it to the output interface based on given strategy.",1,1)
 
 #define MODULE_PARAMS(PARAM) \
 PARAM('b', "budget", " every strategy is limited by budget. This parameter specifies the budget. This number should be in interval [0,1] and it is interpreted as percentage of the data.", required_argument, "int32") \
-PARAM('s', "query-strategy", "Number of the query strategy to be used. ", required_argument, "int32") \
+PARAM('q', "query-strategy", "Number of the query strategy to be used. ", required_argument, "int32") \
+PARAM('t', "threshold", "θ - labeling threshold for Fixed uncertainty strategy", required_argument, "double")\
+PARAM('s', "step", "adjusting step", required_argument, "double")\
 PARAM('n', "no-eof", "Do not send terminate message vie output IFC.", no_argument, "none")
+
+
+
 
 static char stop = 0; /*!< Global variable used by signal handler to end the traffic repeater. */
 static int verb = 0; /*< Global variable used to print verbose messages. */
 static char sendeof = 1;
 
 static double budget =0.5;
+static double labeling_threshold =0.5;
+static double step =0.1;
 
 TRAP_DEFAULT_SIGNAL_HANDLER(stop = 1)
 
 
-char random_strategy(const void *data,ur_template_t * in_tmplt){
+double get_random() { return (double)rand() / (double)RAND_MAX; }
+
+char random_strategy(const void *data,ur_template_t * in_tmplt,int fieldID){
    return (get_random() < budget);
 }
 
-char fixed_uncertainty_strategy(const void *data,ur_template_t * in_tmplt){
-   static int mem =0;
+char fixed_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID){
+   double probability = (*(double *)  ((char *)(data) + (in_tmplt)->offset[fieldID]));
 
-
+   return(probability < labeling_threshold);
 }
 
-char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt){
+char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID){
+   static double I_labeling_threshold =1.0;
+   static double u =1.0;
+   static long t = 0;
+   t++;
+   if(t >= T_MAX){
+      t=1;
+      u /= T_MAX;
+   }
+
+   if(u/t < budget){
+      double probability = (*(double *)  ((char *)(data) + (in_tmplt)->offset[fieldID]));
+      if(probability < I_labeling_threshold){
+         u++;
+         I_labeling_threshold *= 1-step;
+         return 1;
+      }else{
+         I_labeling_threshold *= step+1;
+         return 0;
+      }
+   }else{
+      return 0;
+   }
+} 
 
 
+char uncertainty_strategy_with_randomization(const void *data,ur_template_t * in_tmplt,int fieldID){
+   return 0;
 }
 
-
-void salf(void)
+void salf(int query_strategy)
 {
    int ret;
    uint16_t data_size;
@@ -91,19 +124,23 @@ void salf(void)
    const void *data;
    struct timespec start, end;
    ur_template_t * in_tmplt= NULL;
+   int fieldID =0;
+   char (* strategy_fnc)(const void *, ur_template_t * ,int) = &random_strategy;
 
-   char (* strategy_fnc)(const void *, ur_template_t * ) = &random_strategy;
 
-
-   switch (diff){
+   switch (query_strategy){
+   case 0:
+      strategy_fnc =&random_strategy;
+      break;
    case 1:
-      strategy_fnc =&random_strategy;
+      strategy_fnc =&fixed_uncertainty_strategy;
       break;
-   
    case 2:
-      strategy_fnc =&random_strategy;
+      strategy_fnc =&variable_uncertainty_strategy;
       break;
-   
+   case 3:
+      strategy_fnc =&uncertainty_strategy_with_randomization;
+      break;      
    default:
       break;
    }
@@ -111,17 +148,13 @@ void salf(void)
    data_size = 0;
    data = NULL;
    if (verb) {
-      fprintf(stderr, "Info: Initializing traffic repeater...\n");
+      fprintf(stderr, "Info: Initializing salf...\n");
    }
    clock_gettime(CLOCK_MONOTONIC, &start);
 
    //set NULL to required format on input interface
 
- //"ipaddr SRC_IP,ipaddr DST_IP,uint16 SRC_PORT,uint16 DST_PORT,uint8 PROTOCOL,uint64 BYTES,uint64 BYTES_REV,uint32 PACKETS,uint32 PACKETS_REV,time TIME_FIRST,time TIME_LAST,string TLS_SNI,uint8 PREDICTION,string EXPLANATION,string LABEL";
-   
    trap_set_required_fmt(0, TRAP_FMT_UNIREC, "");
-
-   
 
    TRAP_REGISTER_DEFAULT_SIGNAL_HANDLER();
 
@@ -133,7 +166,7 @@ void salf(void)
          if (ret == TRAP_E_OK && in_tmplt != NULL) {
             if (data_size <= 1) {
                if (verb) {
-                  fprintf(stderr, "Info: Final record received, terminating repeater...\n");
+                  fprintf(stderr, "Info: Final record received, salf...\n");
                }
                stop = 1;
             }
@@ -149,11 +182,17 @@ void salf(void)
             if(in_tmplt !=NULL){
                ur_free_template(in_tmplt);
             }
-            int test=ur_define_set_of_fields(spec);
-            in_tmplt = ur_create_template_from_ifc_spec(spec);
-
             
-
+            if(ur_define_set_of_fields(spec) !=UR_OK){
+               //TODO
+            }
+            in_tmplt = ur_create_template_from_ifc_spec(spec);
+            fieldID =ur_get_id_by_name("FEATURE_OUTPUT_PROBA");
+            if (fieldID < 0 || in_tmplt == NULL)
+            {
+               /* TODO code */
+            }
+            
             // Set the same data format to repeaters output interface
             trap_set_data_fmt(0, TRAP_FMT_UNIREC, spec);
             
@@ -166,17 +205,12 @@ void salf(void)
          } else {
 
             if(in_tmplt == NULL){
-               //TODO co delat
+               //TODO
                //continue;
             }
 
-            int ggg =ur_get_id_by_name("PREDICTION");
-
-            uint8_t lol= ur_get(in_tmplt,data,ggg);
-
-            uint8_t kkk = (*(uint8_t *)  ((char *)(data) + (in_tmplt)->offset[ggg]));
-
-            if(!(*strategy_fnc)(data,in_tmplt)){
+            
+            if(!(*strategy_fnc)(data,in_tmplt,fieldID)){
                continue;
             }
 
@@ -219,23 +253,29 @@ int main(int argc, char **argv)
 
    int query_strategy =0;
 
+   
    while ((opt = TRAP_GETOPT(argc, argv, module_getopt_string, long_options)) != -1) {
       switch (opt) {
       case 'n':
          sendeof = 0;
          break;
-      case 'b':
-         char *ptr;
-         budget = strtod(optarg, &ptr);
+      case 'b'://budget
+         budget = strtod(optarg, NULL);
          
          break;
-      case 's':
+      case 'q'://query strategy
          query_strategy = atoi(optarg);
+         break;
+      case 't'://treshold
+         labeling_threshold = strtod(optarg, NULL);
+         break;
+      case 's'://step
+         step = strtod(optarg, NULL);
          break;
       }
    }
 
-   salf();
+   salf(query_strategy);
    TRAP_DEFAULT_FINALIZATION();
    FREE_MODULE_INFO_STRUCT(MODULE_BASIC_INFO, MODULE_PARAMS)
 

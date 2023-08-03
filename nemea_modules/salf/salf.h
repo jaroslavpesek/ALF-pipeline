@@ -49,6 +49,8 @@
 //#ifdef HAVE_CONFIG_H //TODO OPRAVIT takhle je to spatne
 #include "config.h"
 //#endif
+//#include "randomnumbers.c"
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,25 +66,33 @@
 
 /*!
  * \name Default values
- *  Defines macros used by traffic repeater.
+ *  Defines macros used by salf.
  * \{ */
 #define IFC_IN_NUM 1 /*< Number of input interfaces expected by module. */
 #define IFC_OUT_NUM 1 /*< Number of output interfaces expected by module. */
 
 #define NS 1000000000 /*< Number of nanoseconds in a second. */
+
+#define T_MAX 1000000000 /*< Max value of t. */
 /*! \} */
 
 
-double get_random() { return (double)rand() / (double)RAND_MAX; }
-
-
-char  random_strategy(const void *data,ur_template_t * in_tmplt);
 
 /*!
- * \brief Traffic repeater function
- * Function to resend received data from input interface to output interface.
+ * \brief Random Strategy function (ID 0)
+ * Function to ...
+ * \param[in] data Pointer to data.
+ * \param[in] in_tmplt UniRec template.
+ * \return true / false.
  */
-void salf(void);
+char random_strategy(const void *data,ur_template_t * in_tmplt,int fieldID);
+
+/*!
+ * \brief SALF function
+ * Function to resend received data from input interface to output interface.
+ * \param[in] query_strategy ID of strategy to use.
+ */
+void salf(int query_strategy);
 
 /*!
  * \brief Main function.
