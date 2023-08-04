@@ -1,5 +1,5 @@
 /*!
- * \file traffic_repeater.c
+ * \file salf.c
  * \author Jan Neuzil <neuzija1@fit.cvut.cz>
  * \author Tomas Cejka <cejkat@cesnet.cz>
  * \date 2013
@@ -67,25 +67,50 @@ static char sendeof = 1;
 
 static double budget =0.5;
 static double labeling_threshold =0.5;
-static double step =0.1;
+static double step =0.4;
 static double t_variance=1;
 
 TRAP_DEFAULT_SIGNAL_HANDLER(stop = 1)
 
 
-double get_random() { return (double)rand() / (double)RAND_MAX; }
 
 char random_strategy(const void *data,ur_template_t * in_tmplt,int fieldID){
-   return (get_random() < budget);
+   return (get_uniform_random() < budget);
 }
 
 char fixed_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID){
    double probability = (*(double *)  ((char *)(data) + (in_tmplt)->offset[fieldID]));
-
    return(probability < labeling_threshold);
 }
 
 char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID){
+   static double threshold =1.0;
+   static double u =1.0;
+   static long t = 0;
+   t++;
+   if(t >= T_MAX){
+      t=1;
+      u /= T_MAX;
+   }
+
+   if(u/t < budget){
+      double probability = (*(double *)  ((char *)(data) + (in_tmplt)->offset[fieldID]));
+      threshold *= normal_distribution(1,t_variance);
+      if(probability < threshold){
+         u++;
+         threshold *= 1-step;
+         return 1;
+      }else{
+         threshold *= step+1;
+         return 0;
+      }
+   }else{
+      return 0;
+   }
+} 
+
+
+char uncertainty_strategy_with_randomization(const void *data,ur_template_t * in_tmplt,int fieldID){
    static double threshold =1.0;
    static double u =1.0;
    static long t = 0;
@@ -108,11 +133,6 @@ char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int
    }else{
       return 0;
    }
-} 
-
-
-char uncertainty_strategy_with_randomization(const void *data,ur_template_t * in_tmplt,int fieldID){
-   return 0;
 }
 
 void salf(int query_strategy)
@@ -192,7 +212,7 @@ void salf(int query_strategy)
             fieldID =ur_get_id_by_name("FEATURE_OUTPUT_PROBA");
             if (fieldID < 0 || in_tmplt == NULL)
             {
-               /* TODO code */
+               /* TODO */
             }
             
             // Set the same data format to repeaters output interface
@@ -232,6 +252,7 @@ void salf(int query_strategy)
    diff = (end.tv_sec * NS + end.tv_nsec) - (start.tv_sec * NS + start.tv_nsec);
    fprintf(stderr, "Info: Flows received:  %16" PRIu64 "\n", cnt_r > 0 ? cnt_r - 1 : cnt_r);
    fprintf(stderr, "Info: Flows sent:      %16" PRIu64 "\n", cnt_s > 0 ? cnt_s - 1 : cnt_s);
+   fprintf(stderr, "Info: %% of Flows sent:%16.2f%%"  "\n", cnt_r > 0 ?  ((double)cnt_s/ (double)cnt_r)*100: 0);
    fprintf(stderr, "Info: Timeouts:        %16" PRIu64 "\n", cnt_t);
    fprintf(stderr, "Info: Time elapsed:    %12" PRIu64 ".%03" PRIu64 "s\n", diff / NS, (diff % NS) / 1000000);
 

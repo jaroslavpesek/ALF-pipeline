@@ -1,6 +1,6 @@
 /*!
- * \file traffic_repeater.h
- * \brief Example module for simple traffic forwarding from server to client.
+ * \file salf.h
+ * \brief SALF
  * \author Jan Neuzil <neuzija1@fit.cvut.cz>
  * \date 2013
  * \date 2014
@@ -42,14 +42,14 @@
  *
  */
 
-#ifndef _TRAFFIC_REPEATER_H_
-#define _TRAFFIC_REPEATER_H_
+#ifndef _SALF_H_
+#define _SALF_H_
 
 // Information if sigaction is available for nemea signal macro registration
 //#ifdef HAVE_CONFIG_H //TODO OPRAVIT takhle je to spatne
 #include "config.h"
 //#endif
-//#include "randomnumbers.c"
+#include "randomnumbers.c"
 
 
 #include <stdio.h>
@@ -87,6 +87,9 @@
  */
 char random_strategy(const void *data,ur_template_t * in_tmplt,int fieldID);
 
+
+
+
 /*!
  * \brief SALF function
  * Function to resend received data from input interface to output interface.
@@ -96,11 +99,11 @@ void salf(int query_strategy);
 
 /*!
  * \brief Main function.
- * Main function to parse given arguments and run the traffic repeater.
+ * Main function to parse given arguments and run SALF.
  * \param[in] argc Number of given parameters.
  * \param[in] argv Array of given parameters.
  * \return EXIT_SUCCESS on success, otherwise EXIT_FAILURE.
  */
 int main(int argc, char **argv);
 
-#endif /* _TRAFFIC_REPEATER_H_ */
+#endif /* _SALF_H_ */
