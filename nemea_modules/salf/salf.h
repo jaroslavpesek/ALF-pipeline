@@ -83,11 +83,42 @@
  * Function to ...
  * \param[in] data Pointer to data.
  * \param[in] in_tmplt UniRec template.
- * \return true / false.
+ * \param[in] fieldID ID of field with propability.
+ * \return {true,false} indicates whether to request the true label.
  */
 char random_strategy(const void *data,ur_template_t * in_tmplt,int fieldID);
 
 
+/*!
+ * \brief  Fixed Uncertainty Strategy (ID 1)
+ * Function to ...
+ * \param[in] data Pointer to data.
+ * \param[in] in_tmplt UniRec template.
+ * \param[in] fieldID ID of field with propability.
+ * \return {true,false} indicates whether to request the true label.
+ */
+char fixed_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID);
+
+/*!
+ * \brief Variable Uncertainty Strategy (ID 2)
+ * Function to ...
+ * \param[in] data Pointer to data.
+ * \param[in] in_tmplt UniRec template.
+ * \param[in] fieldID ID of field with propability.
+ * \return {true,false} indicates whether to request the true label.
+ */
+char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID);
+
+
+/*!
+ * \brief Uncertainty Strategy with Randomization (ID 3)
+ * Function to ...
+ * \param[in] data Pointer to data.
+ * \param[in] in_tmplt UniRec template.
+ * \param[in] fieldID ID of field with propability.
+ * \return {true,false} indicates whether to request the true label.
+ */
+char uncertainty_strategy_with_randomization(const void *data,ur_template_t * in_tmplt,int fieldID);
 
 
 /*!

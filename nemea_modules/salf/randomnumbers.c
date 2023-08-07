@@ -1,18 +1,18 @@
 #include <math.h>
 #include <stdlib.h>
- 
+
 
  //generate a uniform random variable ξ ∈ [0, 1]
 double get_uniform_random() { return (double)rand() / (double)RAND_MAX; }
 
 
  
-double normal_distribution (double mu, double sigma)
+double normal_distribution(double mu, double sigma)
 {
   double U1, U2, W, mult;
   static double X1, X2;
   static int call = 0;
- 
+  
   if (call == 1)
     {
       call = !call;
