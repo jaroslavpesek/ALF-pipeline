@@ -148,16 +148,16 @@ void salf(int query_strategy)
 
    switch (query_strategy){
    case 0:
-      strategy_fnc =&random_strategy;
+      strategy_fnc = &random_strategy;
       break;
    case 1:
-      strategy_fnc =&fixed_uncertainty_strategy;
+      strategy_fnc = &fixed_uncertainty_strategy;
       break;
    case 2:
-      strategy_fnc =&variable_uncertainty_strategy;
+      strategy_fnc = &variable_uncertainty_strategy;
       break;
    case 3:
-      strategy_fnc =&uncertainty_strategy_with_randomization;
+      strategy_fnc = &uncertainty_strategy_with_randomization;
       break;      
    default:
       break;
