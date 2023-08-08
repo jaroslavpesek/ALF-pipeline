@@ -10,3 +10,9 @@
     - libtrap
     - unirec
     - nemea-framework
+
+- name: Registrace systemd sluzby nemea-supervisor
+  systemd:
+    name: nemea-supervisor.service
+    enabled: yes
+    state: started

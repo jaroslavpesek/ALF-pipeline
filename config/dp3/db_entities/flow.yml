@@ -1,6 +1,6 @@
 entity:
-  id: flow_unlabeled
-  name: unlabeled flow
+  id: flow
+  name: Entity for network flow
   key_data_type: int64
   auto_create_record: true
   snapshot: true
@@ -10,21 +10,13 @@ attribs:
     description: A JSON containing the features of the flow
     type: plain
     data_type: json
-  ip_src:
-    name: ip_src
-    description: Source IP address
+  characteristics:
+    name: characteristics
+    description: A JSON containing the characteristics of the flow
+    type: plain
+    data_type: json
+  state:
+    name: state
+    description: The state of the flow
     type: plain
     data_type: string
-  ip_dst:
-    name: ip_dst
-    description: Destination IP address
-    type: plain
-    data_type: string
-
-  
-  
-  
-
-
-
-
