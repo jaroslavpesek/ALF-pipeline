@@ -1,12 +1,11 @@
 /*!
- * \file traffic_repeater.h
- * \brief Example module for simple traffic forwarding from server to client.
- * \author Jan Neuzil <neuzija1@fit.cvut.cz>
- * \date 2013
- * \date 2014
+ * \file salf.h
+ * \brief SALF
+ * \author David Kezlinek <kezlidav@fit.cvut.cz>
+ * \date 2023
  */
 /*
- * Copyright (C) 2013,2014 CESNET
+ * Copyright (C) 2023 CESNET
  *
  * LICENSE TERMS
  *
@@ -42,13 +41,17 @@
  *
  */
 
-#ifndef _TRAFFIC_REPEATER_H_
-#define _TRAFFIC_REPEATER_H_
+#ifndef _SALF_H_
+#define _SALF_H_
 
 // Information if sigaction is available for nemea signal macro registration
+
+/* used in nemea-modules file
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+    #include <config.h>
 #endif
+*/
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,30 +63,81 @@
 #include <getopt.h>
 #include <inttypes.h>
 #include <libtrap/trap.h>
+#include <unirec/unirec.h>
+
+#include "randomnumbers.c"
 
 /*!
  * \name Default values
- *  Defines macros used by traffic repeater.
+ *  Defines macros used by salf.
  * \{ */
 #define IFC_IN_NUM 1 /*< Number of input interfaces expected by module. */
 #define IFC_OUT_NUM 1 /*< Number of output interfaces expected by module. */
 
 #define NS 1000000000 /*< Number of nanoseconds in a second. */
+
+#define T_MAX 100000 /*< Max value of t. */
 /*! \} */
 
+
+
 /*!
- * \brief Traffic repeater function
- * Function to resend received data from input interface to output interface.
+ * \brief Random Strategy function (ID 0)
+ * Function to ...
+ * \param[in] data Pointer to data.
+ * \param[in] in_tmplt UniRec template.
+ * \param[in] fieldID ID of field with propability.
+ * \return {true,false} indicates whether to request the true label.
  */
-void traffic_repeater(void);
+char random_strategy(const void *data,ur_template_t * in_tmplt,int fieldID);
+
+
+/*!
+ * \brief  Fixed Uncertainty Strategy (ID 1)
+ * Function to ...
+ * \param[in] data Pointer to data.
+ * \param[in] in_tmplt UniRec template.
+ * \param[in] fieldID ID of field with propability.
+ * \return {true,false} indicates whether to request the true label.
+ */
+char fixed_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID);
+
+/*!
+ * \brief Variable Uncertainty Strategy (ID 2)
+ * Function to ...
+ * \param[in] data Pointer to data.
+ * \param[in] in_tmplt UniRec template.
+ * \param[in] fieldID ID of field with propability.
+ * \return {true,false} indicates whether to request the true label.
+ */
+char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID);
+
+
+/*!
+ * \brief Uncertainty Strategy with Randomization (ID 3)
+ * Function to ...
+ * \param[in] data Pointer to data.
+ * \param[in] in_tmplt UniRec template.
+ * \param[in] fieldID ID of field with propability.
+ * \return {true,false} indicates whether to request the true label.
+ */
+char uncertainty_strategy_with_randomization(const void *data,ur_template_t * in_tmplt,int fieldID);
+
+
+/*!
+ * \brief SALF function
+ * Function to resend received data from input interface to output interface.
+ * \param[in] query_strategy ID of strategy to use.
+ */
+void salf(int query_strategy);
 
 /*!
  * \brief Main function.
- * Main function to parse given arguments and run the traffic repeater.
+ * Main function to parse given arguments and run SALF.
  * \param[in] argc Number of given parameters.
  * \param[in] argv Array of given parameters.
  * \return EXIT_SUCCESS on success, otherwise EXIT_FAILURE.
  */
 int main(int argc, char **argv);
 
-#endif /* _TRAFFIC_REPEATER_H_ */
+#endif /* _SALF_H_ */
