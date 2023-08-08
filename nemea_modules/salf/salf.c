@@ -46,7 +46,7 @@
 trap_module_info_t *module_info = NULL;
 
 #define MODULE_BASIC_INFO(BASIC) \
-  BASIC("salf","This module receive data from input interface and resend it to the output interface based on given strategy.",1,1)
+  BASIC("salf", "This module receives data from the input interface and selects it to the output interface based on given active learning strategy. The module does not have any ML capabilities; it makes decisions on FEATURE_PREDICT_PROBA field in UniRec.",1,1)
 
 #define MODULE_PARAMS(PARAM) \
 PARAM('b', "budget", "Every strategy is limited by budget. This parameter specifies the budget. This number should be in interval [0,1] and it is interpreted as percentage of the data.", required_argument, "int32") \
