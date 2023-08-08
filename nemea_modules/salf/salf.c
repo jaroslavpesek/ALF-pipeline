@@ -1,13 +1,11 @@
 /*!
  * \file salf.c
- * \author Jan Neuzil <neuzija1@fit.cvut.cz>
- * \author Tomas Cejka <cejkat@cesnet.cz>
- * \date 2013
- * \date 2014
- * \date 2017
+ * \brief SALF
+ * \author David Kezlinek <kezlidav@fit.cvut.cz>
+ * \date 2023
  */
 /*
- * Copyright (C) 2013-2017 CESNET
+ * Copyright (C) 2023 CESNET
  *
  * LICENSE TERMS
  *
@@ -51,7 +49,7 @@ trap_module_info_t *module_info = NULL;
   BASIC("salf","This module receive data from input interface and resend it to the output interface based on given strategy.",1,1)
 
 #define MODULE_PARAMS(PARAM) \
-PARAM('b', "budget", " every strategy is limited by budget. This parameter specifies the budget. This number should be in interval [0,1] and it is interpreted as percentage of the data.", required_argument, "int32") \
+PARAM('b', "budget", "Every strategy is limited by budget. This parameter specifies the budget. This number should be in interval [0,1] and it is interpreted as percentage of the data.", required_argument, "int32") \
 PARAM('q', "query-strategy", "Number of the query strategy to be used.  0 - Random Strategy  1 -  Fixed Uncertainty Strategy 2 - Variable Uncertainty Strategy  3 -  Uncertainty Strategy with Randomization", required_argument, "int32") \
 PARAM('t', "threshold", "labeling threshold for Fixed uncertainty strategy", required_argument, "double")\
 PARAM('s', "step", "adjusting step", required_argument, "double")\
@@ -68,7 +66,7 @@ static char sendeof = 1;
 static double budget =0.5;
 static double labeling_threshold =0.5;
 static double step =0.4;
-static double t_deviation=10; 
+static double t_deviation=1; 
 
 TRAP_DEFAULT_SIGNAL_HANDLER(stop = 1)
  
@@ -145,9 +143,8 @@ void salf(int query_strategy)
    const void *data;
    struct timespec start, end;
    ur_template_t * in_tmplt= NULL;
-   int fieldID =0;
+   int fieldID =0; //field ID of argmax P 
    char (* strategy_fnc)(const void *, ur_template_t * ,int) = &random_strategy;
-
 
    switch (query_strategy){
    case 0:
@@ -205,31 +202,35 @@ void salf(int query_strategy)
             }
             
             if(ur_define_set_of_fields(spec) !=UR_OK){
-               //TODO
+               if (verb) {
+                  fprintf(stderr, "Error: Unirec fields could not be defined...\n");
+               }
+               return;
             }
             in_tmplt = ur_create_template_from_ifc_spec(spec);
             fieldID =ur_get_id_by_name("FEATURE_OUTPUT_PROBA");
-            if (fieldID < 0 || in_tmplt == NULL)
+            if (fieldID < 0 || in_tmplt == NULL )
             {
-               /* TODO */
+               if (verb) {
+                  fprintf(stderr, "Error: template...\n");
+               }
+               return;
             }
-            
+            if(!ur_is_present(in_tmplt,fieldID)){
+               if (verb) {
+                  fprintf(stderr, "Error: field is not present in template...\n");
+               }
+               ur_free_template(in_tmplt);
+               return;               
+            }
             // Set the same data format to repeaters output interface
             trap_set_data_fmt(0, TRAP_FMT_UNIREC, spec);
-            
          }
-         
          
          if (stop == 1 && sendeof == 0){
             /* terminating module without eof message */
             break;
          } else {
-
-            if(in_tmplt == NULL){
-               //TODO
-               //continue;
-            }
-
             
             if(!(*strategy_fnc)(data,in_tmplt,fieldID)){
                continue;
@@ -270,11 +271,9 @@ int main(int argc, char **argv)
    TRAP_DEFAULT_INITIALIZATION(argc, argv, *module_info);
    verb = (trap_get_verbose_level() >= 0);
    signed char opt;
-
-   srand(time(NULL)); // randomize seed
-
    int query_strategy =0;
-
+   
+   srand(time(NULL)); // randomize seed
    
    while ((opt = TRAP_GETOPT(argc, argv, module_getopt_string, long_options)) != -1) {
       switch (opt) {
@@ -294,14 +293,14 @@ int main(int argc, char **argv)
       case 's'://step
          step = strtod(optarg, NULL);
          break;
-      case 'd'://step
+      case 'd'://deviation
          t_deviation = strtod(optarg, NULL);
          break;
       }
    }
 
-   
    salf(query_strategy);
+
    TRAP_DEFAULT_FINALIZATION();
    FREE_MODULE_INFO_STRUCT(MODULE_BASIC_INFO, MODULE_PARAMS)
 

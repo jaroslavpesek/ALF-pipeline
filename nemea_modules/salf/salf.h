@@ -1,12 +1,11 @@
 /*!
  * \file salf.h
  * \brief SALF
- * \author Jan Neuzil <neuzija1@fit.cvut.cz>
- * \date 2013
- * \date 2014
+ * \author David Kezlinek <kezlidav@fit.cvut.cz>
+ * \date 2023
  */
 /*
- * Copyright (C) 2013,2014 CESNET
+ * Copyright (C) 2023 CESNET
  *
  * LICENSE TERMS
  *
@@ -46,11 +45,13 @@
 #define _SALF_H_
 
 // Information if sigaction is available for nemea signal macro registration
-//#ifdef HAVE_CONFIG_H //TODO OPRAVIT takhle je to spatne
-#include "config.h"
-//#endif
-#include "randomnumbers.c"
 
+/* used in nemea-modules file
+#ifdef HAVE_CONFIG_H
+    #include <config.h>
+#endif
+*/
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,6 +65,8 @@
 #include <libtrap/trap.h>
 #include <unirec/unirec.h>
 
+#include "randomnumbers.c"
+
 /*!
  * \name Default values
  *  Defines macros used by salf.
@@ -73,7 +76,7 @@
 
 #define NS 1000000000 /*< Number of nanoseconds in a second. */
 
-#define T_MAX 1000000000 /*< Max value of t. */
+#define T_MAX 100000 /*< Max value of t. */
 /*! \} */
 
 
