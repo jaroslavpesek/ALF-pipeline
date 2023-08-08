@@ -127,7 +127,7 @@ char uncertainty_strategy_with_randomization(const void *data,ur_template_t * in
          threshold *= step+1;
          return 0;
       }
-   }else{
+   } else {
       return 0;
    }
 }
