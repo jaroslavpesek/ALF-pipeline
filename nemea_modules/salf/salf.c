@@ -63,10 +63,10 @@ static char stop = 0; /*!< Global variable used by signal handler to end the tra
 static int verb = 0; /*< Global variable used to print verbose messages. */
 static char sendeof = 1;
 
-static double budget =0.5;
-static double labeling_threshold =0.5;
-static double step =0.4;
-static double t_deviation=1; 
+static double budget = 0.5;
+static double labeling_threshold = 0.5;
+static double step = 0.4;
+static double t_deviation = 1; 
 
 TRAP_DEFAULT_SIGNAL_HANDLER(stop = 1)
  
