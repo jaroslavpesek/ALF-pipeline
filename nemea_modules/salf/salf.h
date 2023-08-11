@@ -77,6 +77,9 @@
 #define NS 1000000000 /*< Number of nanoseconds in a second. */
 
 #define T_MAX 100000 /*< Max value of t. */
+
+#define PROP_FIELD_NAME "PREDICTED_PROBAS" /*Name of Probability array. */
+
 /*! \} */
 
 
