@@ -71,34 +71,50 @@ static double t_deviation = 1;
 TRAP_DEFAULT_SIGNAL_HANDLER(stop = 1)
  
 
+double get_max(const void *data,ur_template_t * in_tmplt,int fieldID){
+   int size = ur_array_get_elem_cnt(in_tmplt,data,fieldID);
+   if(size <= 0)
+      return 0;
+   double max = 0;
+   double sum = 0;
+   for (size_t i = 0; i < size; i++){
+      double tmp = ((double *)((char *)(ur_get_ptr_by_id(in_tmplt, data, fieldID))))[i]; // == ur_array_get(in_tmplt,data,fieldID,i);
+      if(tmp > max)
+         max = tmp;
+      sum += tmp;
+      if((1 - sum) < max)
+         break;
+   }
+   return max;
+}
 
 char random_strategy(const void *data,ur_template_t * in_tmplt,int fieldID){
    return (get_uniform_random() < budget);
 }
 
 char fixed_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID){
-   double probability = (*(double *)  ((char *)(data) + (in_tmplt)->offset[fieldID]));
+   double probability = get_max(data,in_tmplt,fieldID);
    return(probability < labeling_threshold);
 }
 
 char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int fieldID){
-   static double threshold =1.0;
-   static double u =1.0;
+   static double threshold = 1.0;
+   static double u = 1.0;
    static long t = 0;
    t++;
    if(t >= T_MAX){
-      t=1;
+      t = 1;
       u /= T_MAX;
    }
 
    if(u/t < budget){
-      double probability = (*(double *)  ((char *)(data) + (in_tmplt)->offset[fieldID]));
+      double probability = get_max(data,in_tmplt,fieldID);
       if(probability < threshold){
          u++;
-         threshold *= 1-step;
+         threshold *= 1 - step;
          return 1;
       }else{
-         threshold *= step+1;
+         threshold *= step + 1;
          return 0;
       }
    }else{
@@ -106,25 +122,24 @@ char variable_uncertainty_strategy(const void *data,ur_template_t * in_tmplt,int
    }
 } 
 
-
 char uncertainty_strategy_with_randomization(const void *data,ur_template_t * in_tmplt,int fieldID){
-   static double threshold =1.0;
-   static double u =1.0;
+   static double threshold = 1.0;
+   static double u = 1.0;
    static long t = 0;
    t++;
    if(t >= T_MAX){
-      t=1;
+      t = 1;
       u /= T_MAX;
    }
 
    if(u/t < budget){
-      double probability = (*(double *)  ((char *)(data) + (in_tmplt)->offset[fieldID]));
+      double probability = get_max(data,in_tmplt,fieldID);
       if(probability < (threshold * normal_distribution(1,t_deviation))){
          u++;
-         threshold *= 1-step;
+         threshold *= 1 - step;
          return 1;
       }else{
-         threshold *= step+1;
+         threshold *= step + 1;
          return 0;
       }
    } else {
@@ -197,23 +212,31 @@ void salf(int query_strategy)
                return;
             }
 
-            if(in_tmplt !=NULL){
+            if(in_tmplt != NULL){
                ur_free_template(in_tmplt);
             }
             
-            if(ur_define_set_of_fields(spec) !=UR_OK){
+            if(ur_define_set_of_fields(spec) != UR_OK){
                if (verb) {
                   fprintf(stderr, "Error: Unirec fields could not be defined...\n");
                }
                return;
             }
             in_tmplt = ur_create_template_from_ifc_spec(spec);
-            fieldID =ur_get_id_by_name("FEATURE_OUTPUT_PROBA");
-            if (fieldID < 0 || in_tmplt == NULL )
+            fieldID = ur_get_id_by_name(PROP_FIELD_NAME);
+            if (fieldID < 0 || in_tmplt == NULL)
             {
                if (verb) {
                   fprintf(stderr, "Error: template...\n");
                }
+               return;
+            }
+            if (!ur_is_array(fieldID))
+            {
+               if (verb) {
+                  fprintf(stderr, "Error: template...\n");
+               }
+               ur_free_template(in_tmplt);
                return;
             }
             if(!ur_is_present(in_tmplt,fieldID)){
@@ -263,15 +286,13 @@ void salf(int query_strategy)
 }
 
 
-
-
 int main(int argc, char **argv)
 {
    INIT_MODULE_INFO_STRUCT(MODULE_BASIC_INFO, MODULE_PARAMS)
    TRAP_DEFAULT_INITIALIZATION(argc, argv, *module_info);
    verb = (trap_get_verbose_level() >= 0);
    signed char opt;
-   int query_strategy =0;
+   int query_strategy = 0;
    
    srand(time(NULL)); // randomize seed
    
