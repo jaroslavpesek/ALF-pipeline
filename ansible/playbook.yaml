@@ -3,7 +3,8 @@
   become: yes
   roles:
   #  - base
-  #  - nemea
+    - nemea
+    - build
     - python
     - dp3
 

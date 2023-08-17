@@ -60,7 +60,7 @@
 
 - name: Download rmq_reconfigure.sh script
   get_url:
-    url: "https://raw.githubusercontent.com/CESNET/dp3/new_dp3/scripts/rmq_reconfigure.sh"
+    url: "https://raw.githubusercontent.com/CESNET/dp3/master/scripts/rmq_reconfigure.sh"
     dest: "/tmp/rmq_reconfigure.sh"
     mode: '0700'
 

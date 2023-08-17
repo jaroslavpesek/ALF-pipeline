@@ -1,12 +1,23 @@
+- name: Upgrade pip
+  pip:
+    name: pip
+    state: latest
+
 - name: Create Python virtual enviroment for DP3
   command: python3 -m venv /dp3-venv
 
 - name: Create Python virtual enviroment for ML Deployer
   command: python3 -m venv /ml-venv
 
+- name: Install gunicorn for DP3
+  pip:
+    name: gunicorn
+    state: present
+    virtualenv: /dp3-venv
+
 - name: Install dp3 from git
   pip:
-    name: "git+https://github.com/CESNET/dp3.git@new_dp3#egg=dp3[deploy]"
+    name: "git+https://github.com/CESNET/dp3.git#egg=dp-cubed"
     state: present
     virtualenv: /dp3-venv
 

@@ -20,3 +20,10 @@ attribs:
     description: The state of the flow
     type: plain
     data_type: string
+  qod:
+    name: qod
+    description: The quality of dataset scoring
+    type: plain
+    data_type: json
+    
+

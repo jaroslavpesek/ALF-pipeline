@@ -1,5 +1,8 @@
 - name: Enable Fedora Copr for NEMEA
-  command: dnf copr -y enable @CESNET/NEMEA-stable
+  command: dnf copr -y enable @CESNET/NEMEA
+
+- name: Enable Fedora Copr for IPFIXcol2
+  command: dnf copr -y enable @CESNET/IPFIXcol
 
 - name: Install NEMEA and friends
   dnf:
@@ -9,7 +12,15 @@
     - nemea
     - libtrap
     - unirec
-    - nemea-framework
+    - nemea-supervisor
+    - nemea-modules
+
+- name: Install IPFIXcol2
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ipfixcol2
 
 - name: Registrace systemd sluzby nemea-supervisor
   systemd:
