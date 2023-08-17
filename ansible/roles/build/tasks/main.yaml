@@ -1,0 +1,8 @@
+---
+- name: Clone ALF-pipeline repository
+  git:
+    repo: https://github.com/jaroslavpesek/ALF-pipeline.git
+    dest: /opt/ALF-pipeline
+
+- name: Build SALF
+  command: make -C /opt/ALF-pipeline/nemea_modules/salf
