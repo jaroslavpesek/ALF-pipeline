@@ -10,10 +10,7 @@
     state: present
   with_items:
     - nemea
-    - libtrap
-    - unirec
-    - nemea-supervisor
-    - nemea-modules
+    - nemea-framework-devel
 
 - name: Install IPFIXcol2
   dnf:
@@ -22,7 +19,7 @@
   with_items:
     - ipfixcol2
 
-- name: Registrace systemd sluzby nemea-supervisor
+- name: Enable and start service nemea-supervisor
   systemd:
     name: nemea-supervisor.service
     enabled: yes

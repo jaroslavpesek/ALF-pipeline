@@ -1,0 +1,44 @@
+---
+- name: Install packages for DP3
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nginx
+    - supervisor
+    - redis
+
+- name: Import RPM keys for RabbitMQ server
+  rpm_key:
+    key: "{{ item }}"
+    state: present
+  with_items:
+    - 'https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc'
+    - 'https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key'
+    - 'https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key'
+
+- name: Copy rabbitmq.repo file
+  copy:
+    src: rabbitmq.repo
+    dest: /etc/yum.repos.d/rabbitmq.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Update dnf
+  dnf:
+    update_cache: yes
+
+- name: Install RabbitMQ and dependencies
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - socat
+    - logrotate
+    - erlang-25.3.2.3
+    - rabbitmq-server
+
+
+
+

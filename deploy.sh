@@ -1,7 +1,7 @@
 #!/bin/bash
 
 APP_NAME=alf
-SERVER=grappa
+SERVER=sklepmistr
 ROOT_PATH=$(pwd)
 
 echo "Deploying $APP_NAME to $SERVER."
@@ -13,7 +13,7 @@ echo "Done ansible. Waiting 10 seconds"
 sleep 10
 echo
 echo "API status response:"
-echo $(curl -s http://grappa.liberouter.org/api/)
+echo $(curl -s http://$SERVER.liberouter.org/api/)
 echo
 echo "Checking ${APP_NAME}ctl status:"
 echo $(ssh $SERVER.liberouter.org "${APP_NAME}ctl status")

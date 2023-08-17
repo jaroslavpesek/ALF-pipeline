@@ -6,3 +6,11 @@
 
 - name: Build SALF
   command: make -C /opt/ALF-pipeline/nemea_modules/salf
+
+- name: Build cryptominer annotator
+  shell: |
+    cd /opt/ALF-pipeline/annotators/cryptominer
+    autoreconf -i
+    ./configure
+    make
+    

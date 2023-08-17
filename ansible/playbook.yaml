@@ -1,10 +1,13 @@
 ---
 - hosts: all
   become: yes
+  vars:
+    ansible_remote_tmp: /tmp/ansible
   roles:
-  #  - base
+    - base
     - nemea
     - build
-    - python
-    - dp3
+  #  - python
+  #  - dp3-dependencies
+  #  - dp3
 
