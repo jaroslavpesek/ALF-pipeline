@@ -46,11 +46,10 @@
 
 // Information if sigaction is available for nemea signal macro registration
 
-/* used in nemea-modules file
 #ifdef HAVE_CONFIG_H
     #include <config.h>
 #endif
-*/
+
 #include "config.h"
 
 #include <stdio.h>
