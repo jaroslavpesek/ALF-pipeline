@@ -5,7 +5,12 @@
     dest: /opt/ALF-pipeline
 
 - name: Build SALF
-  command: make -C /opt/ALF-pipeline/nemea_modules/salf
+  shell: |
+    cd /opt/ALF-pipeline/nemea_modules/salf
+    autoreconf -i
+    ./configure
+    make
+    make install
 
 - name: Build cryptominer annotator
   shell: |
@@ -13,4 +18,4 @@
     autoreconf -i
     ./configure
     make
-    
+    make install
