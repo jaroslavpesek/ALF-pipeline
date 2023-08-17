@@ -50,8 +50,6 @@
     #include <config.h>
 #endif
 
-#include "config.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -63,8 +61,6 @@
 #include <inttypes.h>
 #include <libtrap/trap.h>
 #include <unirec/unirec.h>
-
-#include "randomnumbers.c"
 
 /*!
  * \name Default values
