@@ -1,0 +1,31 @@
+<module>
+    <name>salf</name>
+    <enabled>true</enabled>
+    <path>/usr/local/bin/salf</path>
+    <module-restarts>1</module-restarts>
+    <trapinterfaces>
+        <interface>
+          <!-- MANDATORY element, values {TCP,UNIXSOCKET,FILE,BLACKHOLE,TLS} -->
+          <!-- Interface uses TCP socket (TCP socket is used for machine to machine communication) -->
+          <type>TCP</type>
+          <!-- MANDATORY element, values {IN,OUT} -->
+          <!-- Input interface -->
+          <direction>IN</direction>
+          <!-- MANDATORY element -->
+          <!-- Input interface connects to localhost:7600 -->
+          <params>7600</params>
+        </interface>
+        <interface>
+          <!-- MANDATORY element, values {TCP,UNIXSOCKET,FILE,BLACKHOLE,TLS} -->
+          <!-- Interface uses unix socket (unix socket is used for localhost communication) -->
+          <type>UNIXSOCKET</type>
+          <!-- MANDATORY element, values {IN,OUT} -->
+          <!-- Output interface-->
+          <direction>OUT</direction>
+          <!-- MANDATORY element -->
+          <!-- Listens on "trafrep_example_output" unix socket -->
+          <params>trafrep_example_output</params>
+        </interface>
+      </trapinterfaces>
+</module>
+

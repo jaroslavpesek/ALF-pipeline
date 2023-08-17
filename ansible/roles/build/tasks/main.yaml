@@ -19,3 +19,8 @@
     ./configure
     make
     make install
+
+- name: Build pipeline from modules
+  shell: |
+    cp /opt/ALF-pipeline/config/nemea/salf.sup /etc/nemea/data-sources/.
+    supcli -r
