@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<nemea-supervisor>
+<!-- include /usr/share/nemea-supervisor/warning.sup -->
+
+  <modules>
+    <name>Stream Active Learning Framework Modules</name>
+    <enabled>true</enabled>
+    <!-- include /etc/nemea/salfs -->
+  </modules>
+
+  <modules>
+    <name>Annotators</name>
+    <enabled>true</enabled>
+    <!-- include /etc/nemea/annotators -->
+  </modules>
+
+  <modules>
+    <name>Flow dumpers</name>
+    <enabled>true</enabled>
+    <!-- include /etc/nemea/dumpers -->
+  </modules>
+</nemea-supervisor>

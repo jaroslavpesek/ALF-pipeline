@@ -1,0 +1,25 @@
+<module>
+    <name>salf</name>
+    <enabled>true</enabled>
+    <path>/usr/local/bin/miner_filter</path>
+    <module-restarts>3</module-restarts>
+    <params>-b /opt/ALF-pipeline/annotatos/cryptominer/verified_miners.debug.txt</params>
+    <trapinterfaces>
+        <interface>
+          <type>UNIXSOCKET</type>
+          <direction>IN</direction>
+          <params>salfed</params>
+        </interface>
+        <interface>
+          <type>UNIXSOCKET</type>
+          <direction>OUT</direction>
+          <params>crypto</params>
+        </interface>
+        <interface>
+          <type>UNIXSOCKET</type>
+          <direction>OUT</direction>
+          <params>non_crypto</params>
+        </interface>
+      </trapinterfaces>
+</module>
+

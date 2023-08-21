@@ -1,0 +1,38 @@
+<module>
+<name>crypto_dumper</name>
+<enabled>true</enabled>
+<path>/usr/bin/nemea/traffic_repeater</path>
+<params></params>
+
+<trapinterfaces>
+<interface>
+  <type>UNIXSOCKET</type>
+  <direction>IN</direction>
+  <params>crypto</params>
+</interface>
+<interface>
+  <type>FILE</type>
+  <direction>OUT</direction>
+  <params>/data/cryptominer/%Y/%m/%d/crypto/crypto_flowfile.trapcap:time=1440</params>
+</interface>
+</trapinterfaces>
+</module>
+
+<module>
+<name>non_crypto_dumper</name>
+<enabled>true</enabled>
+<path>/usr/bin/nemea/traffic_repeater</path>
+<params></params>
+<trapinterfaces>
+<interface>
+  <type>UNIXSOCKET</type>
+  <direction>IN</direction>
+  <params>non_crypto</params>
+</interface>
+<interface>
+  <type>FILE</type>
+  <direction>OUT</direction>
+  <params>/data/cryptominer/%Y/%m/%d/non_crypto/crypto_flowfile.trapcap:time=1440</params>
+</interface>
+</trapinterfaces>
+</module>

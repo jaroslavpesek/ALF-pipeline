@@ -15,7 +15,7 @@ UR_FIELDS (
 )
 
 #define MODULE_BASIC_INFO(BASIC) \
-    BASIC("miner_filter", "Miner blacklist filter.\n", 1, 1)
+    BASIC("miner_filter", "Miner blacklist filter.\n", 1, 2)
 
 #define MODULE_PARAMS(PARAM) \
     PARAM('b', "blacklist", "Blaclist file in format 'IP port\\n'.", required_argument, "filename") 
@@ -62,6 +62,7 @@ do_mainloop(Blacklist& blacklist)
 
             // Set the same data format to repeaters output interface
             trap_set_data_fmt(0, TRAP_FMT_UNIREC, spec);
+            trap_set_data_fmt(1, TRAP_FMT_UNIREC, spec);
         }
 
         struct filter_pair filter_pair(
@@ -70,6 +71,9 @@ do_mainloop(Blacklist& blacklist)
 
         if (blacklist.is_blacklisted(filter_pair) == true) {
             ret = trap_send(0, data, data_size);
+            TRAP_DEFAULT_SEND_DATA_ERROR_HANDLING(ret, continue, break)
+        } else {
+            ret = trap_send(1, data, data_size);
             TRAP_DEFAULT_SEND_DATA_ERROR_HANDLING(ret, continue, break)
         }
     }
