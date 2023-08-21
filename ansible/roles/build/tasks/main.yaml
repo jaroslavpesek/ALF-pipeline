@@ -26,7 +26,7 @@
     mkdir -p /etc/nemea/annotators
     mkdir -p /etc/nemea/dumpers
     cp /opt/ALF-pipeline/config/nemea/salf.sup /etc/nemea/salfs/.
-    cp /opt/ALF-pipeline/config/nemea/cryptominer_annotator.sup /etc/nemea/annotatos/.
+    cp /opt/ALF-pipeline/config/nemea/cryptominer_annotator.sup /etc/nemea/annotators/.
     cp /opt/ALF-pipeline/config/nemea/data_dumper.sup /etc/nemea/dumpers/. 
     cp /opt/ALF-pipeline/config/nemea/supervisor_config_template.xml /etc/nemea/supervisor_config_template.xml
     supcli -r
