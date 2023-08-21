@@ -1,5 +1,5 @@
 <module>
-    <name>salf</name>
+    <name>crypto_annotator</name>
     <enabled>true</enabled>
     <path>/usr/local/bin/miner_filter</path>
     <module-restarts>3</module-restarts>
