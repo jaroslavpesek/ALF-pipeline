@@ -13,7 +13,7 @@
 <interface>
   <type>FILE</type>
   <direction>OUT</direction>
-  <params>/data/cryptominer/%Y/%m/%d/crypto/crypto_flowfile.trapcap:time=1440</params>
+  <params>/data/cryptominer/%Y/%m/%d/crypto_flowfile.trapcap:time=1440</params>
 </interface>
 </trapinterfaces>
 </module>
@@ -32,7 +32,7 @@
 <interface>
   <type>FILE</type>
   <direction>OUT</direction>
-  <params>/data/cryptominer/%Y/%m/%d/non_crypto/crypto_flowfile.trapcap:time=1440</params>
+  <params>/data/cryptominer/%Y/%m/%d/non_crypto_flowfile.trapcap:time=1440</params>
 </interface>
 </trapinterfaces>
 </module>
