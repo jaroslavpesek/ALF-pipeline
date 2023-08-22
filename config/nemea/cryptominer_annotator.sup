@@ -3,7 +3,7 @@
     <enabled>true</enabled>
     <path>/usr/local/bin/miner_filter</path>
     <module-restarts>3</module-restarts>
-    <params>-b /opt/ALF-pipeline/annotatos/cryptominer/verified_miners.debug.txt</params>
+    <params>-b /opt/ALF-pipeline/annotators/cryptominer/verified_miners.debug.txt</params>
     <trapinterfaces>
         <interface>
           <type>UNIXSOCKET</type>
