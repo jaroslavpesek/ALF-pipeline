@@ -3,6 +3,12 @@
 <!-- include /usr/share/nemea-supervisor/warning.sup -->
 
   <modules>
+    <name>Data sources</name>
+    <enabled>true</enabled>
+    <!-- include /etc/nemea/data-sources -->
+  </modules>
+
+  <modules>
     <name>Stream Active Learning Framework Modules</name>
     <enabled>true</enabled>
     <!-- include /etc/nemea/salfs -->

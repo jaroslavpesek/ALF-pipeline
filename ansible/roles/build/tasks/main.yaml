@@ -28,6 +28,7 @@
     cp /opt/ALF-pipeline/config/nemea/salf.sup /etc/nemea/salfs/.
     cp /opt/ALF-pipeline/config/nemea/cryptominer_annotator.sup /etc/nemea/annotators/.
     cp /opt/ALF-pipeline/config/nemea/data_dumper.sup /etc/nemea/dumpers/. 
+    cp /opt/ALF-pipeline/config/nemea/source.sup /etc/nemea/data-sources/. 
     cp /opt/ALF-pipeline/config/nemea/supervisor_config_template.xml /etc/nemea/supervisor_config_template.xml
     mkdir -p /data/cryptominer
     chown -R nemead:nemead /data/cryptominer

@@ -1,19 +1,19 @@
 <module>
-    <name>salf</name>
+    <name>source_repeater</name>
     <enabled>true</enabled>
-    <path>/usr/local/bin/salf</path>
+    <path>/usr/bin/nemea/traffic_repeater</path>
     <module-restarts>3</module-restarts>
-    <params>-q 0 --budget 0.1</params>
+    <params>-</params>
     <trapinterfaces>
         <interface>
-          <type>UNIXSOCKET</type>
+          <type>TCP</type>
           <direction>IN</direction>
-          <params>to_salf</params>
+          <params>kilbeggan.liberouter.org:4741</params>
         </interface>
         <interface>
           <type>UNIXSOCKET</type>
           <direction>OUT</direction>
-          <params>salfed</params>
+          <params>to_salf</params>
         </interface>
       </trapinterfaces>
 </module>
