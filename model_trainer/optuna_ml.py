@@ -1,3 +1,7 @@
+
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 import argparse
 import logging
 import optuna
@@ -13,15 +17,19 @@ from sklearn.svm import SVC
 import xgboost as xgb
 import numpy as np
 import time
+import pickle
+
 
 data ={}
 model = 'knn'
+
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a machine learning model using Optuna for hyperparameter optimalization.')
     parser.add_argument('--dataset', type=str, required=True,
                         help='Path to the dataset in .h5 or .csv format or dir with .csv files.')
-    parser.add_argument('--deploy-path', type=str, required=True,
+    parser.add_argument('--deploy_path', type=str, required=False,default='.',
                         help='Path to save the trained model.')
     parser.add_argument('--name', '-n', type=str, default='TestStudy',
                         help='Name of study')
@@ -137,7 +145,7 @@ if __name__ == '__main__':
             load_if_exists=True,
         )
         model =f
-        study.optimize(objective, n_trials=50,timeout=240,n_jobs=-1)#TODO better timeout
+        study.optimize(objective, n_trials=50,timeout=600,n_jobs=-1)#TODO better timeout
         StudyDict[f] = study
         
     
@@ -150,7 +158,7 @@ if __name__ == '__main__':
             BestScore=StudyDict[f].best_value
 
     model=BestModel
-    StudyDict[BestModel].optimize(objective, n_trials=50)
+    StudyDict[BestModel].optimize(objective, n_trials=50,timeout=600,n_jobs=-1)
 
     end_time = time.time()
 
@@ -161,4 +169,34 @@ if __name__ == '__main__':
     logging.info(f'Time taken: {end_time - start_time:.2f} seconds')
 
     ##TODO train and export model
+
+
+    if BestModel == 'knn': #dont work in scikit-learn 1.3.0 works on 1.2.2 see https://github.com/scikit-learn/scikit-learn/issues/26768
+
+        clf = KNeighborsClassifier(**StudyDict[BestModel].best_params)
+    elif BestModel == 'logistic_regression':
+        clf = LogisticRegression(**StudyDict[BestModel].best_params)
+    elif BestModel == 'DecisionTreeClassifier':
+        clf = DecisionTreeClassifier(**StudyDict[BestModel].best_params)
+    elif BestModel == 'random_forest':
+        clf = RandomForestClassifier(**StudyDict[BestModel].best_params)
+    elif BestModel == 'xgboost': #xgboost
+        clf = xgb.XGBClassifier(**(StudyDict[BestModel].best_params))
+
+
+
+
+    le2 = preprocessing.LabelEncoder()
+    y_train = le2.fit_transform(data[['ProtocolName']])
+
+    clf.fit(data.drop(['Label','L7Protocol','ProtocolName'], axis=1), np.ravel(y_train))
+
+
+    if (not args.deploy_path.endswith('/')) and len(args.deploy_path) > 0:
+        args.deploy_path +='/'
+
+    pickle.dump(clf, open(args.deploy_path +args.name +".sav", 'wb'))
+
+    logging.info(f'ML model exported: {args.deploy_path + args.name}.sav')
+
 
